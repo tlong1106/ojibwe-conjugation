@@ -52,3 +52,12 @@ def styled_text(text: str, style: str) -> str:
     start = styles.get(style.lower(), "")
     end = "\033[00m" if start else ""
     return f"{start}{text}{end}"
+
+def get_style(form: str, neg: bool) -> str:
+    style_map = {
+        ("independent", False): "green_normal",
+        ("independent", True): "red_normal",
+        ("dependent", False): "green_italic",
+        ("dependent", True): "red_italic"
+    }
+    return style_map.get((form, neg), "")

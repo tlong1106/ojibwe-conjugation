@@ -4,7 +4,7 @@
 # Should be pure and testable — no printing, user interaction, or I/O.
 
 from .models import ConjugationInput
-from .utils import styled_text
+from .utils import styled_text, get_style
 
 SHORT_VOWELS = ("a", "i", "o")
 LONG_VOWELS = ("aa", "ii", "oo", "e")
@@ -94,15 +94,6 @@ def get_suffix(form: str, neg: bool, category: str, pronoun: str, key = None) ->
         return PRONOUN_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
     return PRONOUN_SUFFIX_MAP[form][neg][category].get(pronoun, "")
 
-def get_style(form: str, neg: bool) -> str:
-    style_map = {
-        ("independent", False): "green_normal",
-        ("independent", True): "red_normal",
-        ("dependent", False): "green_italic",
-        ("dependent", True): "red_italic"
-    }
-    return style_map.get((form, neg), "")
-
 def ends_with_d_or_n(verb: str) -> bool:
     return verb.endswith(("d", "n"))
 
@@ -135,12 +126,13 @@ def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
             suffix = get_suffix("independent", False, "short_vowel", pronoun)
         
     else:
-        if ends_with_d_vowel:
+        if ends_with_d_vowel(verb):
             if verb.endswith("d"):
                 base = verb[:-1]
             suffix = get_suffix("independent", True, "d_vowel", pronoun)
         elif verb.endswith("n"):
             if ends_with_dummy_n(verb):
+                base = verb[:-1]
                 suffix = get_suffix("independent", True, "d_vowel", pronoun)
             else:
                 suffix = get_suffix("independent", True, "n", pronoun)
@@ -166,6 +158,7 @@ def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
             suffix = get_suffix("dependent", True, "d_vowel", pronoun)
         elif verb.endswith("n"):
             if ends_with_dummy_n(verb):
+                base = verb[:-1]
                 suffix = get_suffix("dependent", True, "d_vowel", pronoun)
             else:
                 suffix = get_suffix("dependent", True, "n", pronoun)
