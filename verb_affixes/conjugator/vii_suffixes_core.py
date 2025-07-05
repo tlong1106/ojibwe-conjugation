@@ -43,7 +43,7 @@ PRONOUN_SUFFIX_MAP = {
                 "0p": "zinoon",
                 "0'p": "zininiwan"
             },
-            "d_long_vowel_short_vowel": {
+            "d_vowel": {
                 "0s": "sinoon",
                 "0's": "sinini",
                 "0p": "sinoon",
@@ -89,9 +89,96 @@ PRONOUN_SUFFIX_MAP = {
     }
 }
 
+def get_suffix(form: str, neg: bool, category: str, pronoun: str, key = None) -> str:
+    if key:
+        return PRONOUN_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
+    return PRONOUN_SUFFIX_MAP[form][neg][category].get(pronoun, "")
+
+def get_style(form: str, neg: bool) -> str:
+    style_map = {
+        ("independent", False): "green_normal",
+        ("independent", True): "red_normal",
+        ("dependent", False): "green_italic",
+        ("dependent", True): "red_italic"
+    }
+    return style_map.get((form, neg), "")
+
+def ends_with_d_or_n(verb: str) -> bool:
+    return verb.endswith(("d", "n"))
+
+def ends_with_long_vowel(verb: str) -> bool:
+    return verb.endswith(LONG_VOWELS)
+
+def ends_with_short_vowel(verb: str) -> bool:
+    return verb[:-1] in SHORT_VOWELS
+
+def ends_with_vowel(verb: str) -> bool:
+    return ends_with_long_vowel(verb) or ends_with_short_vowel(verb)
+
+def ends_with_d_vowel(verb: str) -> bool:
+    return verb.endswith("d") or ends_with_vowel(verb)
+
+def ends_with_dummy_n(verb: str) -> bool:
+    return verb in DUMMY_N["verbs"] or verb.endswith(tuple(DUMMY_N["roots"]))
+
+def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
+    
+    base = verb
+    suffix = ""
+    
+    if not neg:
+        if ends_with_d_or_n(verb):
+            suffix = get_suffix("independent", False, "d_n", pronoun)
+        elif ends_with_long_vowel(verb):
+            suffix = get_suffix("independent", False, "long_vowel", pronoun)
+        elif ends_with_short_vowel(verb):
+            suffix = get_suffix("independent", False, "short_vowel", pronoun)
+        
+    else:
+        if ends_with_d_vowel:
+            if verb.endswith("d"):
+                base = verb[:-1]
+            suffix = get_suffix("independent", True, "d_vowel", pronoun)
+        elif verb.endswith("n"):
+            if ends_with_dummy_n(verb):
+                suffix = get_suffix("independent", True, "d_vowel", pronoun)
+            else:
+                suffix = get_suffix("independent", True, "n", pronoun)
+
+    return base, suffix
+
+def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
+    
+    base = verb
+    suffix = ""
+
+    if not neg:
+        if verb.endswith("d") and pronoun in ("0s", "0p"):
+            base = verb[:-1]
+            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "d")
+        elif verb.endswith("n"):
+            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "n")
+        elif ends_with_vowel(verb):
+            suffix = get_suffix("dependent", False, "vowel", pronoun)
+    else:
+        if verb.endswith("d"):
+            base = verb[:-1]
+            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
+        elif verb.endswith("n"):
+            if ends_with_dummy_n(verb):
+                suffix = get_suffix("dependent", True, "d_vowel", pronoun)
+            else:
+                suffix = get_suffix("dependent", True, "n", pronoun)
+        elif ends_with_vowel(verb):
+            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
+
+    return base, suffix
+
 def get_vii_suffix(input_data: ConjugationInput) -> str:
     """
-    Pure function that returns conjugated form of a verb
+    Pure function that returns vii conjugation:
+      form: independent, dependent
+      negation: true, false
     """
     
     verb = input_data.verb
@@ -99,56 +186,14 @@ def get_vii_suffix(input_data: ConjugationInput) -> str:
     neg = input_data.negation
     pronoun = input_data.pronoun
 
-    suffix = ""
-    base = verb
-
-    if form == "independent":
-        if not neg:
-            if verb.endswith(("d", "n")):
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_n"].get(pronoun, "")
-            elif verb.endswith(LONG_VOWELS):
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["long_vowel"].get(pronoun, "")
-            elif verb[-1] in SHORT_VOWELS:
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_vowel"].get(pronoun, "")
-        else:
-            if verb.endswith("n"):
-                if verb in DUMMY_N["verbs"] or verb.endswith(DUMMY_N["roots"]):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_long_vowel_short_vowel"].get(pronoun, "")
-                else:
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n"].get(pronoun, "")
-            elif verb.endswith("d") or verb.endswith(LONG_VOWELS) or verb[-1] in SHORT_VOWELS:
-                if verb.endswith("d"):
-                    base = verb[:-1]
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_long_vowel_short_vowel"].get(pronoun, "")
-
-    elif form == "dependent":
-        if not neg:
-            if verb.endswith("d"):
-                if pronoun in ("0s", "0p"):
-                    base = verb[:-1]
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_n"]["d"][pronoun]
-            elif verb.endswith("n"):
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_n"]["n"].get(pronoun, "")
-            elif verb.endswith(LONG_VOWELS) or verb[-1] in SHORT_VOWELS:
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["vowel"].get(pronoun, "")
-        else:
-            if verb.endswith("d"):
-                base = verb[:-1]
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_vowel"].get(pronoun, "")
-            elif verb.endswith("n"):
-                if verb in DUMMY_N["verbs"] or verb.endswith(DUMMY_N["roots"]):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_vowel"].get(pronoun, "")
-                else:
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n"].get(pronoun, "")
-            elif verb.endswith(LONG_VOWELS) or verb[-1] in SHORT_VOWELS:
-                suffix = PRONOUN_SUFFIX_MAP[form][neg]["d_vowel"].get(pronoun, "")
-
-    if form == "independent" and neg == False:
-        return base + styled_text(suffix, "green_normal")
-    elif form == "independent" and neg == True:
-        return base + styled_text(suffix, "red_normal")
+    if form not in ("independent", "dependent"):
+        return verb
     
-    if form == "dependent" and neg == False:
-        return base + styled_text(suffix, "green_italic")
-    if form == "dependent" and neg == True:
-        return base + styled_text(suffix, "red_italic")
+    if form == "independent":
+        base, suffix = handle_independent(verb, neg, pronoun)
+    else:
+        base, suffix = handle_dependent(verb, neg, pronoun)
+
+    style = get_style(form, neg)
+
+    return base + styled_text(suffix, style)
