@@ -134,3 +134,42 @@ def test_true_n_ending_dep_neg_pl(): # dependent negative plural
 
 # dummy n ending tests:
 
+def test_dummy_n_ending_ind_pos_sing(): # independent positive singular
+    base, suffix = handle_independent("dakaagamin", False, "0s")
+    assert base == "dakaagamin", f"Expected base 'dakaagamin', got '{base}'"
+    assert suffix == "", f"Expected suffix '', got '{suffix}'"
+
+def test_dummy_n_ending_ind_pos_pl(): # independent positive plural
+    base, suffix = handle_independent("dakaagamin", False, "0p")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "wan", f"Expected suffix 'wan', got '{suffix}'"
+
+def test_dummy_n_ending_ind_neg_sing(): # independent negative singular
+    base, suffix = handle_independent("dakaagamin", True, "0s")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
+
+def test_dummy_n_ending_ind_neg_pl(): # independent negative plural
+    base, suffix = handle_independent("dakaagamin", True, "0p")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
+
+def test_dummy_n_ending_dep_pos_sing(): # dependent positive singular
+    base, suffix = handle_dependent("dakaagamin", False, "0s")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
+
+def test_dummy_n_ending_dep_pos_pl(): # dependent positive plural
+    base, suffix = handle_dependent("dakaagamin", False, "0p")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
+
+def test_dummy_n_ending_dep_neg_sing(): # dependent negative singular
+    base, suffix = handle_dependent("dakaagamin", True, "0s")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
+
+def test_dummy_n_ending_dep_neg_pl(): # dependent negative plural
+    base, suffix = handle_dependent("dakaagamin", True, "0p")
+    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
+    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"

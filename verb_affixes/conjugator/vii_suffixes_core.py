@@ -8,11 +8,112 @@ from .utils import styled_text, get_style
 
 SHORT_VOWELS = ("a", "i", "o")
 LONG_VOWELS = ("aa", "ii", "oo", "e")
-CONSONANTS = ("d", "n")
-DUMMY_N = {
-    "verbs": ["zoogipon", "dagwaagin", "onaagoshin"],
-    "roots": ("aagami",)
-}
+DUMMY_N = (
+"agaasademon",
+"akwamon",
+"animamon",
+"animipon",
+"azhashkiiwaagamin",
+"aazhawamon",
+"aazhawaandawemon",
+"aazhoomon",
+"babaamipon",
+"babigwaagamin",
+"babiikwadamon",
+"bagakaagamin",
+"bagamipon",
+"bakemon",
+"bakobiimon",
+"bakobiiyaabiigamon",
+"bakwebiigamin",
+"bangishimon",
+"bazagwaagamin",
+"baapaagadamon",
+"baashkadaawangamon",
+"bengopon",
+"bimamon",
+"bimaabiigamon",
+"bimidewaagamin",
+"bimipon",
+"biijipon",
+"biinaagamin",
+"biindigepon",
+"biinisaagamin",
+"biisipon",
+"biitewaagamin",
+"biiwipon",
+"boonipon",
+"boozaagamin",
+"dagon",
+"dagwaagin",
+"dakaagamin",
+"dakigamin",
+"dakipon",
+"dakwamon",
+"gibaakwadin",
+"gibichipon",
+"ginoomon",
+"gizhaagamin",
+"giiwitaamon",
+"giizhowaagamin",
+"giizhoogamin",
+"gopamon",
+"inamon",
+"inaabiigamon",
+"inaagamin",
+"inigokwademon",
+"ishkwaapon",
+"ishpi-dagwaagin",
+"izhipon",
+"jiigeweyaazhagaamemon",
+"jiikaagamin",
+"madaabiimon",
+"madaagamin",
+"makadewaagamin",
+"mamaangadepon",
+"mamaangipon",
+"mangademon",
+"mashkawaagamin",
+"maajipon",
+"maanadamon",
+"maanamon",
+"maanaagamin",
+"maazhimaagwaagamin",
+"minwamon",
+"minwaagamin",
+"miskwaagamin",
+"miskwiiwaagamin",
+"mishkawaagamin",
+"naazibiimon",
+"nibiiwaagamin",
+"ningwaagonemon",
+"niingidoomon",
+"niiskaajipon",
+"nookaagamin",
+"ogidaakiiwemon",
+"onaagoshin",
+"ondadamon",
+"ondamon",
+"onjipon",
+"ozhaashadamon",
+"ozhaashamon",
+"ozhaawashkwaagamin",
+"ozaawaagamin",
+"washkadamon",
+"waabishkaagamin",
+"waakamin",
+"wekwaamon",
+"wiinaagamin",
+"wiisagaagamin",
+"wiishkobaagamin",
+"zanagamon",
+"ziiwiskaagamin",
+"zoogipon",
+"zhakipon",
+"zhaagwaagamin",
+"zhiiwaagamin",
+"zhiiwitaaganaagamin"
+)
 
 PRONOUN_SUFFIX_MAP = {
     "independent": {
@@ -109,16 +210,16 @@ def ends_with_vowel(verb: str) -> bool:
 def ends_with_d_vowel(verb: str) -> bool:
     return verb.endswith("d") or ends_with_vowel(verb)
 
-def ends_with_dummy_n(verb: str) -> bool:
-    return verb in DUMMY_N["verbs"] or verb.endswith(tuple(DUMMY_N["roots"]))
-
 def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
     
     base = verb
     suffix = ""
     
     if not neg:
-        if ends_with_d_or_n(verb):
+        if verb in DUMMY_N and pronoun == "0p":
+            base = verb[:-1]
+            suffix = get_suffix("independent", False, "long_vowel", pronoun)
+        elif ends_with_d_or_n(verb):
             suffix = get_suffix("independent", False, "d_n", pronoun)
         elif ends_with_long_vowel(verb):
             suffix = get_suffix("independent", False, "long_vowel", pronoun)
@@ -130,12 +231,11 @@ def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
             if verb.endswith("d"):
                 base = verb[:-1]
             suffix = get_suffix("independent", True, "d_vowel", pronoun)
+        elif verb in DUMMY_N:
+            base = verb[:-1]
+            suffix = get_suffix("independent", True, "d_vowel", pronoun)
         elif verb.endswith("n"):
-            if ends_with_dummy_n(verb):
-                base = verb[:-1]
-                suffix = get_suffix("independent", True, "d_vowel", pronoun)
-            else:
-                suffix = get_suffix("independent", True, "n", pronoun)
+            suffix = get_suffix("independent", True, "n", pronoun)
 
     return base, suffix
 
@@ -148,20 +248,23 @@ def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
         if verb.endswith("d") and pronoun in ("0s", "0p"):
             base = verb[:-1]
             suffix = get_suffix("dependent", False, "d_n", pronoun, key = "d")
+        elif verb in DUMMY_N:
+            base = verb[:-1]
+            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "n")
         elif verb.endswith("n"):
             suffix = get_suffix("dependent", False, "d_n", pronoun, key = "n")
         elif ends_with_vowel(verb):
             suffix = get_suffix("dependent", False, "vowel", pronoun)
+    
     else:
         if verb.endswith("d"):
             base = verb[:-1]
             suffix = get_suffix("dependent", True, "d_vowel", pronoun)
+        elif verb in DUMMY_N:
+            base = verb[:-1]
+            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
         elif verb.endswith("n"):
-            if ends_with_dummy_n(verb):
-                base = verb[:-1]
-                suffix = get_suffix("dependent", True, "d_vowel", pronoun)
-            else:
-                suffix = get_suffix("dependent", True, "n", pronoun)
+            suffix = get_suffix("dependent", True, "n", pronoun)
         elif ends_with_vowel(verb):
             suffix = get_suffix("dependent", True, "d_vowel", pronoun)
 
