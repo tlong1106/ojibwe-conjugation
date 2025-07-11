@@ -6,113 +6,114 @@
 from .models import ConjugationInput
 from .utils import styled_text, get_style
 
+# --- 1. Constants ---
 SHORT_VOWELS = ("a", "i", "o")
 LONG_VOWELS = ("aa", "ii", "oo", "e")
 DUMMY_N = (
-"agaasademon",
-"akwamon",
-"animamon",
-"animipon",
-"azhashkiiwaagamin",
-"aazhawamon",
-"aazhawaandawemon",
-"aazhoomon",
-"babaamipon",
-"babigwaagamin",
-"babiikwadamon",
-"bagakaagamin",
-"bagamipon",
-"bakemon",
-"bakobiimon",
-"bakobiiyaabiigamon",
-"bakwebiigamin",
-"bangishimon",
-"bazagwaagamin",
-"baapaagadamon",
-"baashkadaawangamon",
-"bengopon",
-"bimamon",
-"bimaabiigamon",
-"bimidewaagamin",
-"bimipon",
-"biijipon",
-"biinaagamin",
-"biindigepon",
-"biinisaagamin",
-"biisipon",
-"biitewaagamin",
-"biiwipon",
-"boonipon",
-"boozaagamin",
-"dagon",
-"dagwaagin",
-"dakaagamin",
-"dakigamin",
-"dakipon",
-"dakwamon",
-"gibaakwadin",
-"gibichipon",
-"ginoomon",
-"gizhaagamin",
-"giiwitaamon",
-"giizhowaagamin",
-"giizhoogamin",
-"gopamon",
-"inamon",
-"inaabiigamon",
-"inaagamin",
-"inigokwademon",
-"ishkwaapon",
-"ishpi-dagwaagin",
-"izhipon",
-"jiigeweyaazhagaamemon",
-"jiikaagamin",
-"madaabiimon",
-"madaagamin",
-"makadewaagamin",
-"mamaangadepon",
-"mamaangipon",
-"mangademon",
-"mashkawaagamin",
-"maajipon",
-"maanadamon",
-"maanamon",
-"maanaagamin",
-"maazhimaagwaagamin",
-"minwamon",
-"minwaagamin",
-"miskwaagamin",
-"miskwiiwaagamin",
-"mishkawaagamin",
-"naazibiimon",
-"nibiiwaagamin",
-"ningwaagonemon",
-"niingidoomon",
-"niiskaajipon",
-"nookaagamin",
-"ogidaakiiwemon",
-"onaagoshin",
-"ondadamon",
-"ondamon",
-"onjipon",
-"ozhaashadamon",
-"ozhaashamon",
-"ozhaawashkwaagamin",
-"ozaawaagamin",
-"washkadamon",
-"waabishkaagamin",
-"waakamin",
-"wekwaamon",
-"wiinaagamin",
-"wiisagaagamin",
-"wiishkobaagamin",
-"zanagamon",
-"ziiwiskaagamin",
-"zoogipon",
-"zhakipon",
-"zhaagwaagamin",
-"zhiiwaagamin",
-"zhiiwitaaganaagamin"
+    "agaasademon",
+    "akwamon",
+    "animamon",
+    "animipon",
+    "azhashkiiwaagamin",
+    "aazhawamon",
+    "aazhawaandawemon",
+    "aazhoomon",
+    "babaamipon",
+    "babigwaagamin",
+    "babiikwadamon",
+    "bagakaagamin",
+    "bagamipon",
+    "bakemon",
+    "bakobiimon",
+    "bakobiiyaabiigamon",
+    "bakwebiigamin",
+    "bangishimon",
+    "bazagwaagamin",
+    "baapaagadamon",
+    "baashkadaawangamon",
+    "bengopon",
+    "bimamon",
+    "bimaabiigamon",
+    "bimidewaagamin",
+    "bimipon",
+    "biijipon",
+    "biinaagamin",
+    "biindigepon",
+    "biinisaagamin",
+    "biisipon",
+    "biitewaagamin",
+    "biiwipon",
+    "boonipon",
+    "boozaagamin",
+    "dagon",
+    "dagwaagin",
+    "dakaagamin",
+    "dakigamin",
+    "dakipon",
+    "dakwamon",
+    "gibaakwadin",
+    "gibichipon",
+    "ginoomon",
+    "gizhaagamin",
+    "giiwitaamon",
+    "giizhowaagamin",
+    "giizhoogamin",
+    "gopamon",
+    "inamon",
+    "inaabiigamon",
+    "inaagamin",
+    "inigokwademon",
+    "ishkwaapon",
+    "ishpi-dagwaagin",
+    "izhipon",
+    "jiigeweyaazhagaamemon",
+    "jiikaagamin",
+    "madaabiimon",
+    "madaagamin",
+    "makadewaagamin",
+    "mamaangadepon",
+    "mamaangipon",
+    "mangademon",
+    "mashkawaagamin",
+    "maajipon",
+    "maanadamon",
+    "maanamon",
+    "maanaagamin",
+    "maazhimaagwaagamin",
+    "minwamon",
+    "minwaagamin",
+    "miskwaagamin",
+    "miskwiiwaagamin",
+    "mishkawaagamin",
+    "naazibiimon",
+    "nibiiwaagamin",
+    "ningwaagonemon",
+    "niingidoomon",
+    "niiskaajipon",
+    "nookaagamin",
+    "ogidaakiiwemon",
+    "onaagoshin",
+    "ondadamon",
+    "ondamon",
+    "onjipon",
+    "ozhaashadamon",
+    "ozhaashamon",
+    "ozhaawashkwaagamin",
+    "ozaawaagamin",
+    "washkadamon",
+    "waabishkaagamin",
+    "waakamin",
+    "wekwaamon",
+    "wiinaagamin",
+    "wiisagaagamin",
+    "wiishkobaagamin",
+    "zanagamon",
+    "ziiwiskaagamin",
+    "zoogipon",
+    "zhakipon",
+    "zhaagwaagamin",
+    "zhiiwaagamin",
+    "zhiiwitaaganaagamin"
 )
 
 PRONOUN_SUFFIX_MAP = {
@@ -190,6 +191,7 @@ PRONOUN_SUFFIX_MAP = {
     }
 }
 
+# --- 2. Helpers ---
 def get_suffix(form: str, neg: bool, category: str, pronoun: str, key = None) -> str:
     if key:
         return PRONOUN_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
@@ -213,6 +215,161 @@ def ends_with_d_vowel(verb: str) -> bool:
 def remove_final_letter(verb: str) -> str:
     return verb[:-1]
 
+# --- 3. Rule Interface and Implementation ---
+class IndependentAffirmativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class DummyNPluralRule(IndependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return verb in DUMMY_N and pronoun == "0p"
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("independent", False, "long_vowel", pronoun)
+    
+class EndsWithDOrNRule(IndependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_d_or_n(verb)
+
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("independent", False, "d_n", pronoun)
+    
+class EndsWithLongVowelRule(IndependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_long_vowel(verb)
+        
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("independent", False, "long_vowel", pronoun)
+    
+class EndsWithShortVowelRule(IndependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_short_vowel(verb)
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("independent", False, "short_vowel", pronoun)
+    
+class IndependentNegativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+    
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class EndsWithDOrDummyNIndNegRule(IndependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("d") or verb in DUMMY_N
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("independent", True, "d_vowel", pronoun)
+
+class EndsWithNIndNegRule(IndependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("n")
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("independent", True, "n", pronoun)
+    
+class EndsWithVowelIndNegRule(IndependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("independent", True, "d_vowel", pronoun)
+    
+class DependentAffirmativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+    
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class EndsWithDRule(DependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("d") and pronoun in ("0s", "0p")
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "d")
+    
+class DummyNRule(DependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return verb in DUMMY_N
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "n")
+    
+class EndsWithNDepAffirmRule(DependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("n")
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("dependent", False, "d_n", pronoun, key = "n")
+    
+class EndsWithVowelDepAffirmRule(DependentAffirmativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("dependent", False, "vowel", pronoun)
+    
+class DependentNegativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+    
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class EndsWithDOrDummyNDepNegRule(DependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("d") or verb in DUMMY_N
+    
+    def apply(self, verb, pronoun):
+        return remove_final_letter(verb), get_suffix("dependent", True, "d_vowel", pronoun)
+    
+class EndsWithNDepNegRule(DependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return verb.endswith("n")
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("dependent", True, "n", pronoun)
+    
+class EndsWithVowelDepNegRule(DependentNegativeRule):
+    def matches(self, verb, pronoun):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb, pronoun):
+        return verb, get_suffix("dependent", True, "d_vowel", pronoun)
+
+# --- 4. Rule Registry --- 
+INDEPENDENT_AFFIRMATIVE_RULES = [
+    DummyNPluralRule(),
+    EndsWithDOrNRule(),
+    EndsWithLongVowelRule(),
+    EndsWithShortVowelRule()
+]
+
+INDEPENDENT_NEGATIVE_RULES = [
+    EndsWithDOrDummyNIndNegRule(),
+    EndsWithNIndNegRule(),
+    EndsWithVowelIndNegRule()
+]
+
+DEPENDENT_AFFIRMATIVE_RULES = [
+    EndsWithDRule(),
+    DummyNRule(),
+    EndsWithNDepAffirmRule(),
+    EndsWithVowelDepAffirmRule()
+]
+
+DEPENDENT_NEGATIVE_RULES = [
+    EndsWithDOrDummyNDepNegRule(),
+    EndsWithNDepNegRule(),
+    EndsWithVowelDepNegRule()
+]
+
+# --- 5. Main Logic Functions ---
 def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
     if not neg:
         return handle_independent_affirmative(verb, pronoun)
@@ -220,23 +377,15 @@ def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
         return handle_independent_negative(verb, pronoun)
 
 def handle_independent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
-    if verb in DUMMY_N and pronoun == "0p":
-        return remove_final_letter(verb), get_suffix("independent", False, "long_vowel", pronoun)
-    elif ends_with_d_or_n(verb):
-        return verb, get_suffix("independent", False, "d_n", pronoun)
-    elif ends_with_long_vowel(verb):
-        return verb, get_suffix("independent", False, "long_vowel", pronoun)
-    elif ends_with_short_vowel(verb):
-        return remove_final_letter(verb), get_suffix("independent", False, "short_vowel", pronoun)
+    for rule in INDEPENDENT_AFFIRMATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
     return verb, ""
     
 def handle_independent_negative(verb: str, pronoun: str) -> tuple[str, str]:
-    if verb.endswith("d") or verb in DUMMY_N:
-        return remove_final_letter(verb), get_suffix("independent", True, "d_vowel", pronoun)
-    elif verb.endswith("n"):
-        return verb, get_suffix("independent", True, "n", pronoun)
-    if ends_with_vowel(verb):
-        return verb, get_suffix("independent", True, "d_vowel", pronoun)
+    for rule in INDEPENDENT_NEGATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
     return verb, ""
 
 def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
@@ -246,24 +395,15 @@ def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
         return handle_dependent_negative(verb, pronoun)
     
 def handle_dependent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
-    if verb.endswith("d") and pronoun in ("0s", "0p"):
-        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "d")
-    elif verb in DUMMY_N:
-        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "n")
-    elif verb.endswith("n"):
-        return verb, get_suffix("dependent", False, "d_n", pronoun, key = "n")
-    elif ends_with_vowel(verb):
-        return verb, get_suffix("dependent", False, "vowel", pronoun)
+    for rule in DEPENDENT_AFFIRMATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
     return verb, ""
     
 def handle_dependent_negative(verb: str, pronoun: str) -> tuple[str, str]:
-    if verb.endswith("d") or verb in DUMMY_N:
-        return remove_final_letter(verb), get_suffix("dependent", True, "d_vowel", pronoun)
-    elif verb.endswith("n"):
-        return verb, get_suffix("dependent", True, "n", pronoun)
-    elif ends_with_vowel(verb):
-        return verb, get_suffix("dependent", True, "d_vowel", pronoun)
-    return verb, ""
+    for rule in DEPENDENT_NEGATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
 
 def get_vii_suffix(input_data: ConjugationInput) -> str:
     """
