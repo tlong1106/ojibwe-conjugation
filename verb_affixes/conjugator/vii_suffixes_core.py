@@ -202,7 +202,7 @@ def ends_with_long_vowel(verb: str) -> bool:
     return verb.endswith(LONG_VOWELS)
 
 def ends_with_short_vowel(verb: str) -> bool:
-    return verb[:-1] in SHORT_VOWELS
+    return verb.endswith(SHORT_VOWELS)
 
 def ends_with_vowel(verb: str) -> bool:
     return ends_with_long_vowel(verb) or ends_with_short_vowel(verb)
@@ -210,65 +210,60 @@ def ends_with_vowel(verb: str) -> bool:
 def ends_with_d_vowel(verb: str) -> bool:
     return verb.endswith("d") or ends_with_vowel(verb)
 
-def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
-    
-    base = verb
-    suffix = ""
-    
-    if not neg:
-        if verb in DUMMY_N and pronoun == "0p":
-            base = verb[:-1]
-            suffix = get_suffix("independent", False, "long_vowel", pronoun)
-        elif ends_with_d_or_n(verb):
-            suffix = get_suffix("independent", False, "d_n", pronoun)
-        elif ends_with_long_vowel(verb):
-            suffix = get_suffix("independent", False, "long_vowel", pronoun)
-        elif ends_with_short_vowel(verb):
-            suffix = get_suffix("independent", False, "short_vowel", pronoun)
-        
-    else:
-        if ends_with_d_vowel(verb):
-            if verb.endswith("d"):
-                base = verb[:-1]
-            suffix = get_suffix("independent", True, "d_vowel", pronoun)
-        elif verb in DUMMY_N:
-            base = verb[:-1]
-            suffix = get_suffix("independent", True, "d_vowel", pronoun)
-        elif verb.endswith("n"):
-            suffix = get_suffix("independent", True, "n", pronoun)
+def remove_final_letter(verb: str) -> str:
+    return verb[:-1]
 
-    return base, suffix
+def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
+    if not neg:
+        return handle_independent_affirmative(verb, pronoun)
+    else:
+        return handle_independent_negative(verb, pronoun)
+
+def handle_independent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
+    if verb in DUMMY_N and pronoun == "0p":
+        return remove_final_letter(verb), get_suffix("independent", False, "long_vowel", pronoun)
+    elif ends_with_d_or_n(verb):
+        return verb, get_suffix("independent", False, "d_n", pronoun)
+    elif ends_with_long_vowel(verb):
+        return verb, get_suffix("independent", False, "long_vowel", pronoun)
+    elif ends_with_short_vowel(verb):
+        return remove_final_letter(verb), get_suffix("independent", False, "short_vowel", pronoun)
+    return verb, ""
+    
+def handle_independent_negative(verb: str, pronoun: str) -> tuple[str, str]:
+    if verb.endswith("d") or verb in DUMMY_N:
+        return remove_final_letter(verb), get_suffix("independent", True, "d_vowel", pronoun)
+    elif verb.endswith("n"):
+        return verb, get_suffix("independent", True, "n", pronoun)
+    if ends_with_vowel(verb):
+        return verb, get_suffix("independent", True, "d_vowel", pronoun)
+    return verb, ""
 
 def handle_dependent(verb: str, neg: str, pronoun: str) -> tuple[str, str]:
-    
-    base = verb
-    suffix = ""
-
     if not neg:
-        if verb.endswith("d") and pronoun in ("0s", "0p"):
-            base = verb[:-1]
-            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "d")
-        elif verb in DUMMY_N:
-            base = verb[:-1]
-            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "n")
-        elif verb.endswith("n"):
-            suffix = get_suffix("dependent", False, "d_n", pronoun, key = "n")
-        elif ends_with_vowel(verb):
-            suffix = get_suffix("dependent", False, "vowel", pronoun)
-    
+        return handle_dependent_affirmative(verb, pronoun)
     else:
-        if verb.endswith("d"):
-            base = verb[:-1]
-            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
-        elif verb in DUMMY_N:
-            base = verb[:-1]
-            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
-        elif verb.endswith("n"):
-            suffix = get_suffix("dependent", True, "n", pronoun)
-        elif ends_with_vowel(verb):
-            suffix = get_suffix("dependent", True, "d_vowel", pronoun)
-
-    return base, suffix
+        return handle_dependent_negative(verb, pronoun)
+    
+def handle_dependent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
+    if verb.endswith("d") and pronoun in ("0s", "0p"):
+        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "d")
+    elif verb in DUMMY_N:
+        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "n")
+    elif verb.endswith("n"):
+        return verb, get_suffix("dependent", False, "d_n", pronoun, key = "n")
+    elif ends_with_vowel(verb):
+        return verb, get_suffix("dependent", False, "vowel", pronoun)
+    return verb, ""
+    
+def handle_dependent_negative(verb: str, pronoun: str) -> tuple[str, str]:
+    if verb.endswith("d") or verb in DUMMY_N:
+        return remove_final_letter(verb), get_suffix("dependent", True, "d_vowel", pronoun)
+    elif verb.endswith("n"):
+        return verb, get_suffix("dependent", True, "n", pronoun)
+    elif ends_with_vowel(verb):
+        return verb, get_suffix("dependent", True, "d_vowel", pronoun)
+    return verb, ""
 
 def get_vii_suffix(input_data: ConjugationInput) -> str:
     """
@@ -286,10 +281,10 @@ def get_vii_suffix(input_data: ConjugationInput) -> str:
         return verb
     
     if form == "independent":
-        base, suffix = handle_independent(verb, neg, pronoun)
+        verb, suffix = handle_independent(verb, neg, pronoun)
     else:
-        base, suffix = handle_dependent(verb, neg, pronoun)
+        verb, suffix = handle_dependent(verb, neg, pronoun)
 
     style = get_style(form, neg)
 
-    return base + styled_text(suffix, style)
+    return verb + styled_text(suffix, style)
