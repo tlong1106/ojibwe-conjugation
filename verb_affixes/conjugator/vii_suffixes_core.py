@@ -3,6 +3,8 @@
 # Takes in data (via models.py), applies logic, and returns results.
 # Should be pure and testable — no printing, user interaction, or I/O.
 
+from enum import Enum
+from .enum import Form, Negation, Pronoun, WordEndingVII
 from .models import ConjugationInput
 from .utils import styled_text, get_style
 
@@ -117,88 +119,88 @@ DUMMY_N = (
 )
 
 PRONOUN_SUFFIX_MAP = {
-    "independent": {
-        False: {
-            "d_n": {
-                "0s": "",
-                "0's": "ini",
-                "0p": "oon",
-                "0'p": "iniwan"
+    Form.INDEPENDENT_CLAUSE: {
+        Negation.AFFIRMATIVE: {
+            WordEndingVII.D_N: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "",
+                Pronoun.THIRD_PLURAL_INANIMATE: "oon",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ini",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "iniwan"
             },
-            "long_vowel": {
-                "0s": "",
-                "0's": "ni",
-                "0p": "wan",
-                "0'p": "niwan"
+            WordEndingVII.LONG_VOWEL: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "",
+                Pronoun.THIRD_PLURAL_INANIMATE: "wan",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ni",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "niwan"
             },
-            "short_vowel": {
-                "0s": "",
-                "0's": "ini",
-                "0p": "oon",
-                "0'p": "iniwan"
+            WordEndingVII.SHORT_VOWEL: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "",
+                Pronoun.THIRD_PLURAL_INANIMATE: "oon",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ini",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "iniwan"
             }
         },
-        True: {
-            "n": {
-                "0s": "zinoon",
-                "0's": "zinini",
-                "0p": "zinoon",
-                "0'p": "zininiwan"
+        Negation.NEGATIVE: {
+            WordEndingVII.N: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "zinoon",
+                Pronoun.THIRD_PLURAL_INANIMATE: "zinoon",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "zinini",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "zininiwan"
             },
-            "d_vowel": {
-                "0s": "sinoon",
-                "0's": "sinini",
-                "0p": "sinoon",
-                "0'p": "sininiwan"
+            WordEndingVII.D_VOWEL: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "sinoon",
+                Pronoun.THIRD_PLURAL_INANIMATE: "sinoon",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "sinini",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "sininiwan"
             }
         }
     },
-    "dependent": {
-        False: {
-            "d_n": {
-                "d": {
-                    "0s": "k",
-                    "0p": "k"
+    Form.DEPENDENT_CLAUSE: {
+        Negation.AFFIRMATIVE: {
+            WordEndingVII.D_N: {
+                WordEndingVII.D: {
+                    Pronoun.THIRD_SINGULAR_INANIMATE: "k",
+                    Pronoun.THIRD_PLURAL_INANIMATE: "k"
                 },
-                "n": {
-                    "0s": "g",
-                    "0p": "g",
-                    "0's": "inig",
-                    "0'p": "inig"
+                WordEndingVII.N: {
+                    Pronoun.THIRD_SINGULAR_INANIMATE: "g",
+                    Pronoun.THIRD_PLURAL_INANIMATE: "g",
+                    Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "inig",
+                    Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "inig"
                 }
             },
-            "vowel": {
-                "0s": "g",
-                "0p": "g",
-                "0's": "nig",
-                "0'p": "nig"
+            WordEndingVII.VOWEL: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "g",
+                Pronoun.THIRD_PLURAL_INANIMATE: "g",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "nig",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "nig"
             }
         },
-        True: {
-            "d_vowel": {
-                "0s": "sinog",
-                "0p": "sinog",
-                "0's": "sininig",
-                "0'p": "sininig"
+        Negation.NEGATIVE: {
+            WordEndingVII.D_VOWEL: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "sinog",
+                Pronoun.THIRD_PLURAL_INANIMATE: "sinog",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "sininig",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "sininig"
             },
-            "n": {
-                "0s": "zinog",
-                "0p": "zinog",
-                "0's": "zininig",
-                "0'p": "zininig"
+            WordEndingVII.N: {
+                Pronoun.THIRD_SINGULAR_INANIMATE: "zinog",
+                Pronoun.THIRD_PLURAL_INANIMATE: "zinog",
+                Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "zininig",
+                Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "zininig"
             }
         }
     }
 }
 
 # --- 2. Helpers ---
-def get_suffix(form: str, neg: bool, category: str, pronoun: str, key = None) -> str:
+def get_suffix(form: str | Enum, neg: bool | Enum, category: str | Enum, pronoun: str, key = None) -> str:
     if key:
         return PRONOUN_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
     return PRONOUN_SUFFIX_MAP[form][neg][category].get(pronoun, "")
 
 def ends_with_d_or_n(verb: str) -> bool:
-    return verb.endswith(("d", "n"))
+    return verb.endswith((WordEndingVII.D, WordEndingVII.N))
 
 def ends_with_long_vowel(verb: str) -> bool:
     return verb.endswith(LONG_VOWELS)
@@ -210,7 +212,7 @@ def ends_with_vowel(verb: str) -> bool:
     return ends_with_long_vowel(verb) or ends_with_short_vowel(verb)
 
 def ends_with_d_vowel(verb: str) -> bool:
-    return verb.endswith("d") or ends_with_vowel(verb)
+    return verb.endswith(WordEndingVII.D) or ends_with_vowel(verb)
 
 def remove_final_letter(verb: str) -> str:
     return verb[:-1]
@@ -225,31 +227,31 @@ class IndependentAffirmativeRule:
     
 class DummyNPluralRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
-        return verb in DUMMY_N and pronoun == "0p"
+        return verb in DUMMY_N and pronoun == Pronoun.THIRD_PLURAL_INANIMATE
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("independent", False, "long_vowel", pronoun)
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.LONG_VOWEL, pronoun)
     
 class EndsWithDOrNRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_d_or_n(verb)
 
     def apply(self, verb, pronoun):
-        return verb, get_suffix("independent", False, "d_n", pronoun)
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun)
     
 class EndsWithLongVowelRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_long_vowel(verb)
         
     def apply(self, verb, pronoun):
-        return verb, get_suffix("independent", False, "long_vowel", pronoun)
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.LONG_VOWEL, pronoun)
     
 class EndsWithShortVowelRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_short_vowel(verb)
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("independent", False, "short_vowel", pronoun)
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.SHORT_VOWEL, pronoun)
     
 class IndependentNegativeRule:
     def matches(self, verb: str, pronoun: str) -> bool:
@@ -260,24 +262,25 @@ class IndependentNegativeRule:
     
 class EndsWithDOrDummyNIndNegRule(IndependentNegativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("d") or verb in DUMMY_N
+        return verb.endswith(WordEndingVII.D) or verb in DUMMY_N
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("independent", True, "d_vowel", pronoun)
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
 
 class EndsWithNIndNegRule(IndependentNegativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("n")
+        return verb.endswith(WordEndingVII.N)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("independent", True, "n", pronoun)
+        category = WordEndingVII.N
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, category, pronoun)
     
 class EndsWithVowelIndNegRule(IndependentNegativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("independent", True, "d_vowel", pronoun)
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE,  Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
     
 class DependentAffirmativeRule:
     def matches(self, verb: str, pronoun: str) -> bool:
@@ -288,31 +291,32 @@ class DependentAffirmativeRule:
     
 class EndsWithDRule(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("d") and pronoun in ("0s", "0p")
+        return verb.endswith(WordEndingVII.D) and pronoun in (Pronoun.THIRD_SINGULAR_INANIMATE, Pronoun.THIRD_PLURAL_INANIMATE)
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "d")
+        return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.D)
     
 class DummyNRule(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return verb in DUMMY_N
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("dependent", False, "d_n", pronoun, key = "n")
+        return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.N)
     
 class EndsWithNDepAffirmRule(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("n")
+        return verb.endswith(WordEndingVII.N)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("dependent", False, "d_n", pronoun, key = "n")
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.N)
     
 class EndsWithVowelDepAffirmRule(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("dependent", False, "vowel", pronoun)
+        category = WordEndingVII.VOWEL
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, category, pronoun)
     
 class DependentNegativeRule:
     def matches(self, verb: str, pronoun: str) -> bool:
@@ -323,24 +327,25 @@ class DependentNegativeRule:
     
 class EndsWithDOrDummyNDepNegRule(DependentNegativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("d") or verb in DUMMY_N
+        return verb.endswith(WordEndingVII.D) or verb in DUMMY_N
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix("dependent", True, "d_vowel", pronoun)
+        return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
     
 class EndsWithNDepNegRule(DependentNegativeRule):
     def matches(self, verb, pronoun):
-        return verb.endswith("n")
+        return verb.endswith(WordEndingVII.N)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("dependent", True, "n", pronoun)
+        category = WordEndingVII.N
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, category, pronoun)
     
 class EndsWithVowelDepNegRule(DependentNegativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
     def apply(self, verb, pronoun):
-        return verb, get_suffix("dependent", True, "d_vowel", pronoun)
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
 
 # --- 4. Rule Registry --- 
 INDEPENDENT_AFFIRMATIVE_RULES = [
@@ -417,14 +422,16 @@ def get_vii_suffix(input_data: ConjugationInput) -> str:
     neg = input_data.negation
     pronoun = input_data.pronoun
 
-    if form not in ("independent", "dependent"):
+    if form not in (Form.INDEPENDENT_CLAUSE, Form.DEPENDENT_CLAUSE):
         return verb
     
-    if form == "independent":
+    if form == Form.INDEPENDENT_CLAUSE:
         verb, suffix = handle_independent(verb, neg, pronoun)
     else:
         verb, suffix = handle_dependent(verb, neg, pronoun)
 
+    # green = affirmative, red = negative
+    # regular = independent, italic = dependent, bold = imperative, underline = direct object
     style = get_style(form, neg)
 
     return verb + styled_text(suffix, style)
