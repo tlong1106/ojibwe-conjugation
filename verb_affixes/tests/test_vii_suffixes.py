@@ -1,175 +1,53 @@
 import pytest
 from conjugator.vii_suffixes_core import handle_independent, handle_dependent
 
-# ojibwe-conjugation/verb_affixes run: python -m pytest
+# Test data format:
+# (func, verb, neg, pronoun, expected_verb, expected_suffix)
 
-# ad ending tests:
+test_cases = [
+    # ad ending tests
+    (handle_independent, "bakaanad", False, "0s", "bakaanad", ""),
+    (handle_independent, "bakaanad", False, "0p", "bakaanad", "oon"),
+    (handle_independent, "bakaanad", True,  "0s", "bakaana",  "sinoon"),
+    (handle_independent, "bakaanad", True,  "0p", "bakaana",  "sinoon"),
+    (handle_dependent,   "bakaanad", False, "0s", "bakaana",  "k"),
+    (handle_dependent,   "bakaanad", False, "0p", "bakaana",  "k"),
+    (handle_dependent,   "bakaanad", True,  "0s", "bakaana",  "sinog"),
+    (handle_dependent,   "bakaanad", True,  "0p", "bakaana",  "sinog"),
 
-def test_ad_ending_ind_pos_sing(): # independent positive singular
-    base, suffix = handle_independent("bakaanad", False, "0s")
-    assert base == "bakaanad", f"Expected base 'bakaanad', got '{base}'"
-    assert suffix == "", f"Expected suffix '', got '{suffix}'"
+    # vowel ending tests
+    (handle_independent, "gisinaa", False, "0s", "gisinaa", ""),
+    (handle_independent, "gisinaa", False, "0p", "gisinaa", "wan"),
+    (handle_independent, "gisinaa", True,  "0s", "gisinaa", "sinoon"),
+    (handle_independent, "gisinaa", True,  "0p", "gisinaa", "sinoon"),
+    (handle_dependent,   "gisinaa", False, "0s", "gisinaa", "g"),
+    (handle_dependent,   "gisinaa", False, "0p", "gisinaa", "g"),
+    (handle_dependent,   "gisinaa", True,  "0s", "gisinaa", "sinog"),
+    (handle_dependent,   "gisinaa", True,  "0p", "gisinaa", "sinog"),
 
-def test_ad_ending_ind_pos_pl(): # independent positive plural
-    base, suffix = handle_independent("bakaanad", False, "0p")
-    assert base == "bakaanad", f"Expected base 'bakaanad', got '{base}'"
-    assert suffix == "oon", f"Expected suffix 'oon', got '{suffix}'"
+    # true n ending tests
+    (handle_independent, "wanisin", False, "0s", "wanisin", ""),
+    (handle_independent, "wanisin", False, "0p", "wanisin", "oon"),
+    (handle_independent, "wanisin", True,  "0s", "wanisin", "zinoon"),
+    (handle_independent, "wanisin", True,  "0p", "wanisin", "zinoon"),
+    (handle_dependent,   "wanisin", False, "0s", "wanisin", "g"),
+    (handle_dependent,   "wanisin", False, "0p", "wanisin", "g"),
+    (handle_dependent,   "wanisin", True,  "0s", "wanisin", "zinog"),
+    (handle_dependent,   "wanisin", True,  "0p", "wanisin", "zinog"),
 
-def test_ad_ending_ind_neg_sing(): # independent negative singular
-    base, suffix = handle_independent("bakaanad", True, "0s")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
+    # dummy n ending tests
+    (handle_independent, "dakaagamin", False, "0s", "dakaagamin", ""),
+    (handle_independent, "dakaagamin", False, "0p", "dakaagami",  "wan"),
+    (handle_independent, "dakaagamin", True,  "0s", "dakaagami",  "sinoon"),
+    (handle_independent, "dakaagamin", True,  "0p", "dakaagami",  "sinoon"),
+    (handle_dependent,   "dakaagamin", False, "0s", "dakaagami",  "g"),
+    (handle_dependent,   "dakaagamin", False, "0p", "dakaagami",  "g"),
+    (handle_dependent,   "dakaagamin", True,  "0s", "dakaagami",  "sinog"),
+    (handle_dependent,   "dakaagamin", True,  "0p", "dakaagami",  "sinog"),
+]
 
-def test_ad_ending_ind_neg_pl(): # independent negative plural
-    base, suffix = handle_independent("bakaanad", True, "0p")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
-
-def test_ad_ending_dep_pos_sing(): # dependent positive singular
-    base, suffix = handle_dependent("bakaanad", False, "0s")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "k", f"Expected suffix 'k', got '{suffix}'"
-
-def test_ad_ending_dep_pos_pl(): # dependent positive plural
-    base, suffix = handle_dependent("bakaanad", False, "0p")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "k", f"Expected suffix 'k', got '{suffix}'"
-
-def test_ad_ending_dep_neg_sing(): # dependent negative singular
-    base, suffix = handle_dependent("bakaanad", True, "0s")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
-
-def test_ad_ending_dep_neg_pl(): # dependent negative plural
-    base, suffix = handle_dependent("bakaanad", True, "0p")
-    assert base == "bakaana", f"Expected base 'bakaana', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
-
-
-# vowel ending tests:
-
-def test_vowel_ending_ind_pos_sing(): # independent positive singular
-    base, suffix = handle_independent("gisinaa", False, "0s")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "", f"Expected suffix '', got '{suffix}'"
-
-def test_vowel_ending_ind_pos_pl(): # independent positive plural
-    base, suffix = handle_independent("gisinaa", False, "0p")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "wan", f"Expected suffix 'wan', got '{suffix}'"
-
-def test_vowel_ending_ind_neg_sing(): # independent negative singular
-    base, suffix = handle_independent("gisinaa", True, "0s")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
-
-def test_vowel_ending_ind_neg_pl(): # independent negative plural
-    base, suffix = handle_independent("gisinaa", True, "0p")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
-
-def test_vowel_ending_dep_pos_sing(): # dependent positive singular
-    base, suffix = handle_dependent("gisinaa", False, "0s")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_vowel_ending_dep_pos_pl(): # dependent positive plural
-    base, suffix = handle_dependent("gisinaa", False, "0p")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_vowel_ending_dep_neg_sing(): # dependent negative singular
-    base, suffix = handle_dependent("gisinaa", True, "0s")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
-
-def test_vowel_ending_dep_neg_pl(): # dependent negative plural
-    base, suffix = handle_dependent("gisinaa", True, "0p")
-    assert base == "gisinaa", f"Expected base 'gisinaa', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
-
-
-# true n ending tests:
-
-def test_true_n_ending_ind_pos_sing(): # independent positive singular
-    base, suffix = handle_independent("wanisin", False, "0s")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "", f"Expected suffix '', got '{suffix}'"
-
-def test_true_n_ending_ind_pos_pl(): # independent positive plural
-    base, suffix = handle_independent("wanisin", False, "0p")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "oon", f"Expected suffix 'oon', got '{suffix}'"
-
-def test_true_n_ending_ind_neg_sing(): # independent negative singular
-    base, suffix = handle_independent("wanisin", True, "0s")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "zinoon", f"Expected suffix 'zinoon', got '{suffix}'"
-
-def test_true_n_ending_ind_neg_pl(): # independent negative plural
-    base, suffix = handle_independent("wanisin", True, "0p")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "zinoon", f"Expected suffix 'zinoon', got '{suffix}'"
-
-def test_true_n_ending_dep_pos_sing(): # dependent positive singular
-    base, suffix = handle_dependent("wanisin", False, "0s")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_true_n_ending_dep_pos_pl(): # dependent positive plural
-    base, suffix = handle_dependent("wanisin", False, "0p")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_true_n_ending_dep_neg_sing(): # dependent negative singular
-    base, suffix = handle_dependent("wanisin", True, "0s")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "zinog", f"Expected suffix 'zinog', got '{suffix}'"
-
-def test_true_n_ending_dep_neg_pl(): # dependent negative plural
-    base, suffix = handle_dependent("wanisin", True, "0p")
-    assert base == "wanisin", f"Expected base 'wanisin', got '{base}'"
-    assert suffix == "zinog", f"Expected suffix 'zinog', got '{suffix}'"
-
-
-# dummy n ending tests:
-
-def test_dummy_n_ending_ind_pos_sing(): # independent positive singular
-    base, suffix = handle_independent("dakaagamin", False, "0s")
-    assert base == "dakaagamin", f"Expected base 'dakaagamin', got '{base}'"
-    assert suffix == "", f"Expected suffix '', got '{suffix}'"
-
-def test_dummy_n_ending_ind_pos_pl(): # independent positive plural
-    base, suffix = handle_independent("dakaagamin", False, "0p")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "wan", f"Expected suffix 'wan', got '{suffix}'"
-
-def test_dummy_n_ending_ind_neg_sing(): # independent negative singular
-    base, suffix = handle_independent("dakaagamin", True, "0s")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
-
-def test_dummy_n_ending_ind_neg_pl(): # independent negative plural
-    base, suffix = handle_independent("dakaagamin", True, "0p")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "sinoon", f"Expected suffix 'sinoon', got '{suffix}'"
-
-def test_dummy_n_ending_dep_pos_sing(): # dependent positive singular
-    base, suffix = handle_dependent("dakaagamin", False, "0s")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_dummy_n_ending_dep_pos_pl(): # dependent positive plural
-    base, suffix = handle_dependent("dakaagamin", False, "0p")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "g", f"Expected suffix 'g', got '{suffix}'"
-
-def test_dummy_n_ending_dep_neg_sing(): # dependent negative singular
-    base, suffix = handle_dependent("dakaagamin", True, "0s")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
-
-def test_dummy_n_ending_dep_neg_pl(): # dependent negative plural
-    base, suffix = handle_dependent("dakaagamin", True, "0p")
-    assert base == "dakaagami", f"Expected base 'dakaagami', got '{base}'"
-    assert suffix == "sinog", f"Expected suffix 'sinog', got '{suffix}'"
+@pytest.mark.parametrize("func, verb, neg, pronoun, expected_verb, expected_suffix", test_cases)
+def test_vii_suffixes(func, verb, neg, pronoun, expected_verb, expected_suffix):
+    verb, suffix = func(verb, neg, pronoun)
+    assert verb == expected_verb, f"Expected verb '{expected_verb}', got '{verb}'"
+    assert suffix == expected_suffix, f"Expected suffix '{expected_suffix}', got '{suffix}'"

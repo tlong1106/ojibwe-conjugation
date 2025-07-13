@@ -4,13 +4,11 @@
 # Should be pure and testable — no printing, user interaction, or I/O.
 
 from enum import Enum
-from .enum import Form, Negation, Pronoun, WordEndingVII
+from .enum import Form, Negation, Pronoun, WordEndingVowel, WordEndingVII
 from .models import ConjugationInput
 from .utils import styled_text, get_style
 
 # --- 1. Constants ---
-SHORT_VOWELS = ("a", "i", "o")
-LONG_VOWELS = ("aa", "ii", "oo", "e")
 DUMMY_N = (
     "agaasademon",
     "akwamon",
@@ -127,13 +125,13 @@ PRONOUN_SUFFIX_MAP = {
                 Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ini",
                 Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "iniwan"
             },
-            WordEndingVII.LONG_VOWEL: {
+            WordEndingVowel.LONG_VOWEL: {
                 Pronoun.THIRD_SINGULAR_INANIMATE: "",
                 Pronoun.THIRD_PLURAL_INANIMATE: "wan",
                 Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ni",
                 Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "niwan"
             },
-            WordEndingVII.SHORT_VOWEL: {
+            WordEndingVowel.SHORT_VOWEL: {
                 Pronoun.THIRD_SINGULAR_INANIMATE: "",
                 Pronoun.THIRD_PLURAL_INANIMATE: "oon",
                 Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "ini",
@@ -169,7 +167,7 @@ PRONOUN_SUFFIX_MAP = {
                     Pronoun.THIRD_PLURAL_INANIMATE_OBVIATE: "inig"
                 }
             },
-            WordEndingVII.VOWEL: {
+            WordEndingVowel.VOWEL: {
                 Pronoun.THIRD_SINGULAR_INANIMATE: "g",
                 Pronoun.THIRD_PLURAL_INANIMATE: "g",
                 Pronoun.THIRD_SINGULAR_INANIMATE_OBVIATE: "nig",
@@ -203,10 +201,10 @@ def ends_with_d_or_n(verb: str) -> bool:
     return verb.endswith((WordEndingVII.D, WordEndingVII.N))
 
 def ends_with_long_vowel(verb: str) -> bool:
-    return verb.endswith(LONG_VOWELS)
+    return verb.endswith(WordEndingVowel.LONG_VOWEL)
 
 def ends_with_short_vowel(verb: str) -> bool:
-    return verb.endswith(SHORT_VOWELS)
+    return verb.endswith(WordEndingVowel.SHORT_VOWEL)
 
 def ends_with_vowel(verb: str) -> bool:
     return ends_with_long_vowel(verb) or ends_with_short_vowel(verb)
@@ -230,7 +228,7 @@ class DummyNPluralRule(IndependentAffirmativeRule):
         return verb in DUMMY_N and pronoun == Pronoun.THIRD_PLURAL_INANIMATE
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.LONG_VOWEL, pronoun)
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.LONG_VOWEL, pronoun)
     
 class EndsWithDOrNRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
@@ -244,14 +242,14 @@ class EndsWithLongVowelRule(IndependentAffirmativeRule):
         return ends_with_long_vowel(verb)
         
     def apply(self, verb, pronoun):
-        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.LONG_VOWEL, pronoun)
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.LONG_VOWEL, pronoun)
     
 class EndsWithShortVowelRule(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_short_vowel(verb)
     
     def apply(self, verb, pronoun):
-        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.SHORT_VOWEL, pronoun)
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.SHORT_VOWEL, pronoun)
     
 class IndependentNegativeRule:
     def matches(self, verb: str, pronoun: str) -> bool:
@@ -315,8 +313,7 @@ class EndsWithVowelDepAffirmRule(DependentAffirmativeRule):
         return ends_with_vowel(verb)
     
     def apply(self, verb, pronoun):
-        category = WordEndingVII.VOWEL
-        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, category, pronoun)
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.VOWEL, pronoun)
     
 class DependentNegativeRule:
     def matches(self, verb: str, pronoun: str) -> bool:
