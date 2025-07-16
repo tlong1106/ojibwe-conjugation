@@ -116,7 +116,7 @@ DUMMY_N = (
     "zhiiwitaaganaagamin"
 )
 
-PRONOUN_SUFFIX_MAP = {
+VII_SUFFIX_MAP = {
     Form.INDEPENDENT_CLAUSE: {
         Negation.AFFIRMATIVE: {
             WordEndingVII.D_N: {
@@ -194,8 +194,8 @@ PRONOUN_SUFFIX_MAP = {
 # --- 2. Helpers ---
 def get_suffix(form: str | Enum, neg: bool | Enum, category: str | Enum, pronoun: str, key = None) -> str:
     if key:
-        return PRONOUN_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
-    return PRONOUN_SUFFIX_MAP[form][neg][category].get(pronoun, "")
+        return VII_SUFFIX_MAP[form][neg][category].get(key, {}).get(pronoun, "")
+    return VII_SUFFIX_MAP[form][neg][category].get(pronoun, "")
 
 def ends_with_d_or_n(verb: str) -> bool:
     return verb.endswith((WordEndingVII.D, WordEndingVII.N))
@@ -223,28 +223,28 @@ class IndependentAffirmativeRule:
     def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
         raise NotImplementedError
     
-class DummyNPluralRule(IndependentAffirmativeRule):
+class EndDummyNPluralIndPos(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return verb in DUMMY_N and pronoun == Pronoun.THIRD_PLURAL_INANIMATE
     
     def apply(self, verb, pronoun):
         return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.LONG_VOWEL, pronoun)
     
-class EndsWithDOrNRule(IndependentAffirmativeRule):
+class EndDorNIndPos(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_d_or_n(verb)
 
     def apply(self, verb, pronoun):
         return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun)
     
-class EndsWithLongVowelRule(IndependentAffirmativeRule):
+class EndLongVowelIndPos(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_long_vowel(verb)
         
     def apply(self, verb, pronoun):
         return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVowel.LONG_VOWEL, pronoun)
     
-class EndsWithShortVowelRule(IndependentAffirmativeRule):
+class EndShortVowelIndPos(IndependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_short_vowel(verb)
     
@@ -258,14 +258,14 @@ class IndependentNegativeRule:
     def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
         raise NotImplementedError
     
-class EndsWithDOrDummyNIndNegRule(IndependentNegativeRule):
+class EndDorDummyNIndNeg(IndependentNegativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.D) or verb in DUMMY_N
     
     def apply(self, verb, pronoun):
         return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
 
-class EndsWithNIndNegRule(IndependentNegativeRule):
+class EndNIndNeg(IndependentNegativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.N)
     
@@ -273,7 +273,7 @@ class EndsWithNIndNegRule(IndependentNegativeRule):
         category = WordEndingVII.N
         return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, category, pronoun)
     
-class EndsWithVowelIndNegRule(IndependentNegativeRule):
+class EndVowelIndNeg(IndependentNegativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
@@ -287,28 +287,28 @@ class DependentAffirmativeRule:
     def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
         raise NotImplementedError
     
-class EndsWithDRule(DependentAffirmativeRule):
+class ENdDDepPos(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.D) and pronoun in (Pronoun.THIRD_SINGULAR_INANIMATE, Pronoun.THIRD_PLURAL_INANIMATE)
     
     def apply(self, verb, pronoun):
         return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.D)
     
-class DummyNRule(DependentAffirmativeRule):
+class EndDummyNDepPos(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return verb in DUMMY_N
     
     def apply(self, verb, pronoun):
         return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.N)
     
-class EndsWithNDepAffirmRule(DependentAffirmativeRule):
+class EndNDepPos(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.N)
     
     def apply(self, verb, pronoun):
         return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVII.D_N, pronoun, key = WordEndingVII.N)
     
-class EndsWithVowelDepAffirmRule(DependentAffirmativeRule):
+class ENdVowelDepPos(DependentAffirmativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
@@ -322,14 +322,14 @@ class DependentNegativeRule:
     def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
         raise NotImplementedError
     
-class EndsWithDOrDummyNDepNegRule(DependentNegativeRule):
+class EndDorDummyNDepNeg(DependentNegativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.D) or verb in DUMMY_N
     
     def apply(self, verb, pronoun):
         return remove_final_letter(verb), get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVII.D_VOWEL, pronoun)
     
-class EndsWithNDepNegRule(DependentNegativeRule):
+class EndNDepNeg(DependentNegativeRule):
     def matches(self, verb, pronoun):
         return verb.endswith(WordEndingVII.N)
     
@@ -337,7 +337,7 @@ class EndsWithNDepNegRule(DependentNegativeRule):
         category = WordEndingVII.N
         return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, category, pronoun)
     
-class EndsWithVowelDepNegRule(DependentNegativeRule):
+class EndVowelDepNeg(DependentNegativeRule):
     def matches(self, verb, pronoun):
         return ends_with_vowel(verb)
     
@@ -346,29 +346,29 @@ class EndsWithVowelDepNegRule(DependentNegativeRule):
 
 # --- 4. Rule Registry --- 
 INDEPENDENT_AFFIRMATIVE_RULES = [
-    DummyNPluralRule(),
-    EndsWithDOrNRule(),
-    EndsWithLongVowelRule(),
-    EndsWithShortVowelRule()
+    EndDummyNPluralIndPos(),
+    EndDorNIndPos(),
+    EndLongVowelIndPos(),
+    EndShortVowelIndPos()
 ]
 
 INDEPENDENT_NEGATIVE_RULES = [
-    EndsWithDOrDummyNIndNegRule(),
-    EndsWithNIndNegRule(),
-    EndsWithVowelIndNegRule()
+    EndDorDummyNIndNeg(),
+    EndNIndNeg(),
+    EndVowelIndNeg()
 ]
 
 DEPENDENT_AFFIRMATIVE_RULES = [
-    EndsWithDRule(),
-    DummyNRule(),
-    EndsWithNDepAffirmRule(),
-    EndsWithVowelDepAffirmRule()
+    ENdDDepPos(),
+    EndDummyNDepPos(),
+    EndNDepPos(),
+    ENdVowelDepPos()
 ]
 
 DEPENDENT_NEGATIVE_RULES = [
-    EndsWithDOrDummyNDepNegRule(),
-    EndsWithNDepNegRule(),
-    EndsWithVowelDepNegRule()
+    EndDorDummyNDepNeg(),
+    EndNDepNeg(),
+    EndVowelDepNeg()
 ]
 
 # --- 5. Main Logic Functions ---
@@ -414,12 +414,13 @@ def get_vii_suffix(input_data: ConjugationInput) -> str:
       negation: true, false
     """
     
+    type = "vii"
     verb = input_data.verb
     form = input_data.form
     neg = input_data.negation
     pronoun = input_data.pronoun
 
-    if form not in (Form.INDEPENDENT_CLAUSE, Form.DEPENDENT_CLAUSE):
+    if type != "vii":
         return verb
     
     if form == Form.INDEPENDENT_CLAUSE:
