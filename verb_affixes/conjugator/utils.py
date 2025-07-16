@@ -58,6 +58,8 @@ def get_style(form: str, neg: bool) -> str:
         ("independent", False): "green_normal",
         ("independent", True): "red_normal",
         ("dependent", False): "green_italic",
-        ("dependent", True): "red_italic"
+        ("dependent", True): "red_italic",
+        ("imperative", False): "green_bold",
+        ("imperative", True): "red_bold"
     }
     return style_map.get((form, neg), "")

@@ -3,306 +3,423 @@
 # Takes in data (via models.py), applies logic, and returns results.
 # Should be pure and testable — no printing, user interaction, or I/O.
 
+from enum import Enum
+from .enum import Form, Negation, Pronoun, WordEndingVowel, WordEndingVAI
 from .models import ConjugationInput
-from .utils import styled_text
+from .utils import styled_text, get_style
 
-SHORT_VOWELS = ("a", "i", "o")
-LONG_VOWELS = ("aa", "ii", "oo", "e")
-SINGLE_CONSONANTS = ("b", "d", "g", "h", "'", "j", "k", "m", "n", "p", "s", "t", "w", "y", "z")
-DOUBLE_CONSONANTS = ("ch", "sh", "zh")
-
-PRONOUN_SUFFIX_MAP = {
-    "independent": {
-        False: {
-            "short_long_vowel": {
-                "1s": "",
-                "2s": "",
-                "3s": "",
-                "1p": "min",
-                "21": "min",
-                "2p": "m",
-                "3p": "wag"
+# --- 1. Constants ---
+VAI_SUFFIX_MAP = {
+    Form.INDEPENDENT_CLAUSE: {
+        Negation.AFFIRMATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "min",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "min",
+                Pronoun.SECOND_PLURAL_ANIMATE: "m",
+                Pronoun.THIRD_PLURAL_ANIMATE: "wag"
             },
-            "n_am": {
-                "1s": "",
-                "2s": "",
-                "3s": "",
-                "1p": "min",
-                "21": "min",
-                "2p": "m",
-                "3p": "oog"
+           WordEndingVAI.N_AM: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "min",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "min",
+                Pronoun.SECOND_PLURAL_ANIMATE: "m",
+                Pronoun.THIRD_PLURAL_ANIMATE: "oog"
             }
         },
-        True: {
-            "short_long_vowel": {
-                "1s": "siin",
-                "2s": "siin",
-                "3s": "siin",
-                "1p": "siimin",
-                "21": "siimin",
-                "2p": "siim",
-                "3p": "siiwag"
+        Negation.NEGATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "siin",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "siin",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "siin",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "siimin",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "siimin",
+                Pronoun.SECOND_PLURAL_ANIMATE: "siim",
+                Pronoun.THIRD_PLURAL_ANIMATE: "siiwag"
             },
-            "n_am": {
-                "1s": "ziin",
-                "2s": "ziin",
-                "3s": "ziin",
-                "1p": "ziimin",
-                "21": "ziimin",
-                "2p": "ziim",
-                "3p": "ziiwag"
+           WordEndingVAI.N_AM: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "ziin",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "ziin",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "ziin",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "ziimin",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "ziimin",
+                Pronoun.SECOND_PLURAL_ANIMATE: "ziim",
+                Pronoun.THIRD_PLURAL_ANIMATE: "ziiwag"
             }
         }
     },
-    "dependent": {
-        False: {
-            "short_long_vowel": {
-                "1s": "yaan",
-                "2s": "yan",
-                "3s": "d",
-                "1p": "yaang",
-                "21": "yang",
-                "2p": "yeg",
-                "3p": "waad"
+    Form.DEPENDENT_CLAUSE: {
+        Negation.AFFIRMATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "yaan",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "yan",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "d",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "yaang",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "yang",
+                Pronoun.SECOND_PLURAL_ANIMATE: "yeg",
+                Pronoun.THIRD_PLURAL_ANIMATE: "waad"
             },
-            "n_am": {
-                "1s": "aan",
-                "2s": "an",
-                "3s": "g",
-                "1p": "aang",
-                "21": "ang",
-                "2p": "eg",
-                "3p": "owaad"
+           WordEndingVAI.N_AM: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "aan",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "an",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "g",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "aang",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "ang",
+                Pronoun.SECOND_PLURAL_ANIMATE: "eg",
+                Pronoun.THIRD_PLURAL_ANIMATE: "owaad"
             }
         },
-        True: {
-            "short_long_vowel": {
-                "1s": "siwaan",
-                "2s": "siwan",
-                "3s": "sig",
-                "1p": "siwaang",
-                "21": "siwang",
-                "2p": "siweg",
-                "3p": "sigwaa"
+        Negation.NEGATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "siwaan",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "siwan",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "sig",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "siwaang",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "siwang",
+                Pronoun.SECOND_PLURAL_ANIMATE: "siweg",
+                Pronoun.THIRD_PLURAL_ANIMATE: "sigwaa"
             },
-            "n_am": {
-                "1s": "ziwaan",
-                "2s": "ziwan",
-                "3s": "zig",
-                "1p": "ziwaang",
-                "21": "ziwang",
-                "2p": "ziweg",
-                "3p": "zigwaa"
+           WordEndingVAI.N_AM: {
+                Pronoun.FIRST_SINGULAR_ANIMATE: "ziwaan",
+                Pronoun.SECOND_SINGULAR_ANIMATE: "ziwan",
+                Pronoun.THIRD_SINGULAR_ANIMATE: "zig",
+                Pronoun.FIRST_PLURAL_EXC_ANIMATE: "ziwaang",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "ziwang",
+                Pronoun.SECOND_PLURAL_ANIMATE: "ziweg",
+                Pronoun.THIRD_PLURAL_ANIMATE: "zigwaa"
             }
         }
     },
-    "imperative": {
-        False: {
-            "short_long_vowel": {
-                "2s": "n",
-                "21": "daa",
-                "2p": "k"
+    Form.IMPERATIVE: {
+        Negation.AFFIRMATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.SECOND_SINGULAR_ANIMATE: "n",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "daa",
+                Pronoun.SECOND_PLURAL_ANIMATE: "k"
             },
-            "n_am": {
-                "2s": "in",
-                "21": "daa",
-                "2p": "ok"
+           WordEndingVAI.N_AM: {
+                Pronoun.SECOND_SINGULAR_ANIMATE: "in",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "daa",
+                Pronoun.SECOND_PLURAL_ANIMATE: "ok"
             }
         },
-        True: {
-            "short_long_vowel": {
-                "2s": "ken",
-                "21": "siidaa",
-                "2p": "kegon"
+        Negation.NEGATIVE: {
+            WordEndingVAI.SHORT_LONG_VOWEL: {
+                Pronoun.SECOND_SINGULAR_ANIMATE: "ken",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "siidaa",
+                Pronoun.SECOND_PLURAL_ANIMATE: "kegon"
             },
-            "n_am": {
-                "2s": "gen",
-                "21": "ziidaa",
-                "2p": "gegon"
+           WordEndingVAI.N_AM: {
+                Pronoun.SECOND_SINGULAR_ANIMATE: "gen",
+                Pronoun.FIRST_PLURAL_INC_ANIMATE: "ziidaa",
+                Pronoun.SECOND_PLURAL_ANIMATE: "gegon"
             }
         }
     }
 }
 
+# --- 2. Helpers ---
+def get_suffix(form: str | Enum, neg: bool | Enum, category: str | Enum, pronoun: str, key = None) -> str:
+    return VAI_SUFFIX_MAP[form][neg][category].get(pronoun, "")
+
+def ends_with_long_vowel(verb: str) -> bool:
+    return verb.endswith(WordEndingVowel.LONG_VOWEL)
+
+def ends_with_short_vowel(verb: str) -> bool:
+    return verb.endswith(WordEndingVowel.SHORT_VOWEL)
+
+def ends_with_vowel(verb: str) -> bool:
+    return verb.endswith(WordEndingVowel.SHORT_VOWEL) or verb.endswith(WordEndingVowel.LONG_VOWEL)
+
+def ends_with_am(verb: str) -> bool:
+    return verb.endswith(WordEndingVAI.AM)
+
+def ends_with_n(verb: str) -> bool:
+    return verb.endswith(WordEndingVAI.N)
+
+def add_a(verb: str) -> str:
+    return verb + "a"
+
+def add_i(verb: str) -> str:
+    return verb + "i"
+
+def add_n(verb: str) -> str:
+    return verb + "n"
+
+def remove_final_letter(verb: str) -> str:
+    return verb[:-1]
+
+# --- 3. Rule Interface and Implementation ---
+class IndependentAffirmativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class DropShortVowel(IndependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_short_vowel(verb) and not ends_with_long_vowel(verb) and pronoun in (Pronoun.FIRST_SINGULAR_ANIMATE, Pronoun.SECOND_SINGULAR_ANIMATE)
+    
+    def apply(self, verb: str, pronoun: str):
+        return remove_final_letter(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+    
+class VowelEndIndPos(IndependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class AddAIndPos(IndependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_n(verb) and pronoun in (Pronoun.FIRST_PLURAL_EXC_ANIMATE, Pronoun.FIRST_PLURAL_INC_ANIMATE, Pronoun.SECOND_PLURAL_ANIMATE)
+    
+    def apply(self, verb: str, pronoun: str):
+        return add_i(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+
+class AddIIndPos(IndependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_n(verb) and pronoun in (Pronoun.FIRST_PLURAL_EXC_ANIMATE, Pronoun.FIRST_PLURAL_INC_ANIMATE, Pronoun.SECOND_PLURAL_ANIMATE)
+    
+    def apply(self, verb: str, pronoun: str):
+        return add_i(verb), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+
+class EndNorAMIndPos(IndependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb) or ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        if pronoun in (Pronoun.FIRST_PLURAL_EXC_ANIMATE, Pronoun.FIRST_PLURAL_INC_ANIMATE, Pronoun.SECOND_PLURAL_ANIMATE):
+            return add_a(remove_final_letter(verb)), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+
+class IndependentNegativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class EndVowelIndNeg(IndependentNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class EndAMIndNeg(IndependentNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return add_n(remove_final_letter(verb)), get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVAI.N_AM, pronoun)
+    
+class EndNIndNeg(IndependentNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.INDEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVAI.N_AM, pronoun)
+
+class DependentAffirmativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+
+class EndVowelDepPos(DependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class EndNorAMDepPos(DependentAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb) or ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+
+class DependentNegativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+
+class EndVowelDepNeg(DependentNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class EndNorAMDepNeg(DependentNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb) or ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.DEPENDENT_CLAUSE, Negation.NEGATIVE, WordEndingVAI.N_AM, pronoun)
+
+class ImperativeAffirmativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+    
+class EndVowelImpPos(ImperativeAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.IMPERATIVE, Negation.AFFIRMATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class EndNorAMImpPos(ImperativeAffirmativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb) or ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.IMPERATIVE, Negation.AFFIRMATIVE, WordEndingVAI.N_AM, pronoun)
+    
+class ImperativeNegativeRule:
+    def matches(self, verb: str, pronoun: str) -> bool:
+        raise NotImplementedError
+
+    def apply(self, verb: str, pronoun: str) -> tuple[str, str]:
+        raise NotImplementedError
+
+class EndVowelImpNeg(ImperativeNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_vowel(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.IMPERATIVE, Negation.NEGATIVE, WordEndingVAI.SHORT_LONG_VOWEL, pronoun)
+
+class EndNorAMImpNeg(ImperativeNegativeRule):
+    def matches(self, verb: str, pronoun: str):
+        return ends_with_am(verb) or ends_with_n(verb)
+    
+    def apply(self, verb: str, pronoun: str):
+        return verb, get_suffix(Form.IMPERATIVE, Negation.NEGATIVE, WordEndingVAI.N_AM, pronoun)
+
+# --- 4. Rule Registry ---
+INDEPENDENT_AFFIRMATIVE_RULES = [
+DropShortVowel(),
+VowelEndIndPos(),
+AddAIndPos(),
+AddIIndPos(),
+EndNorAMIndPos()
+]
+
+INDEPENDENT_NEGATIVE_RULES = [
+EndVowelIndNeg(),
+EndAMIndNeg(),
+EndNIndNeg()
+]
+
+DEPENDENT_AFFIRMATIVE_RULES = [
+EndVowelDepPos(),
+EndNorAMDepPos()
+]
+
+DEPENDENT_NEGATIVE_RULES = [
+EndVowelDepNeg(),
+EndNorAMDepNeg()
+]
+
+IMPERATIVE_AFFIRMATIVE_RULES = [
+EndVowelImpPos(),
+EndNorAMImpPos()
+]
+
+IMPERATIVE_NEGATIVE_RULES = [
+EndVowelImpNeg(),
+EndNorAMImpNeg()
+]
+
+# --- 5. Main Logic Functions ---
+def handle_independent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
+    if not neg:
+        return handle_independent_affirmative(verb, pronoun)
+    else:
+        return handle_independent_negative(verb, pronoun)
+    
+def handle_independent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in INDEPENDENT_AFFIRMATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
+def handle_independent_negative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in INDEPENDENT_NEGATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
+def handle_dependent(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
+    if not neg:
+        return handle_dependent_affirmative(verb, pronoun)
+    else:
+        return handle_dependent_negative(verb, pronoun)
+    
+def handle_dependent_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in DEPENDENT_AFFIRMATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
+def handle_dependent_negative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in DEPENDENT_NEGATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
+def handle_imperative(verb: str, neg: bool, pronoun: str) -> tuple[str, str]:
+    if not neg:
+        return handle_imperative_affirmative(verb, pronoun)
+    else:
+        return handle_imperative_negative(verb, pronoun)
+    
+def handle_imperative_affirmative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in IMPERATIVE_AFFIRMATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
+def handle_imperative_negative(verb: str, pronoun: str) -> tuple[str, str]:
+    for rule in IMPERATIVE_NEGATIVE_RULES:
+        if rule.matches(verb, pronoun):
+            return rule.apply(verb, pronoun)
+    return verb, ""
+
 def get_vai_suffix(input_data: ConjugationInput) -> str:
 
+    type = "vai"
     verb = input_data.verb
     form = input_data.form
     neg = input_data.negation
     pronoun = input_data.pronoun
 
-    suffix = ""
-    base = verb
+    if type != "vai":
+        return verb
+    
+    if form == Form.INDEPENDENT_CLAUSE:
+        verb, suffix = handle_independent(verb, neg, pronoun)
+    elif form == Form.DEPENDENT_CLAUSE:
+        verb, suffix = handle_dependent(verb, neg, pronoun)
+    elif form == Form.IMPERATIVE:
+        verb, suffix = handle_imperative(verb, neg, pronoun)
 
-    # follow vii_suffixes_core.py and edit content below above this line
+    # green = affirmative, red = negative
+    # regular = independent, italic = dependent, bold = imperative, underline = direct object
+    style = get_style(form, neg)
 
-    if form == "independent":
-        if not neg:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun in ("1s", "2s"):
-                    if verb.endswith(SHORT_VOWELS) and not verb.endswith(LONG_VOWELS):
-                        base = verb[:-1]
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                    else:
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun in ("1p", "21"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n", "am")):
-                if pronoun in ("1s", "2s", "3s"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun in ("1p", "21"):
-                    if verb.endswith("n"):
-                        base = verb + styled_text("i", "underline")
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                    elif verb.endswith("am"):
-                        base = verb[:-1] + styled_text("a", "underline")
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun in ("2p"):
-                    if verb.endswith("n"):
-                        base = verb + styled_text("i", "underline")
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                    elif verb.endswith("am"):
-                        base = verb[:-1] + styled_text("a", "underline")
-                        suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun in ("3p"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-        else:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun in ("1s", "2s", "3s"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun in ("1p", "21"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n", "am")):
-                if verb.endswith("am"):
-                    base = verb[:-1] + styled_text("n", "underline")
-                if pronoun in ("1s", "2s", "3s"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun in ("1p", "21"):
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-    
-    elif form == "dependent":
-        if not neg:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun == "1s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "1p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n","am")):
-                if pronoun == "1s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "3s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "1p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-        else:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun == "1s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "1p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n","am")):
-                if pronoun == "1s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "3s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "1p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "3p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-    
-    elif form == "imperative":
-        if pronoun in ("1s", "3s", "1p", "3p"):
-            base = ""
-        if not neg:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n","am")):
-                if pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-        else:
-            if verb.endswith(SHORT_VOWELS) or verb.endswith(LONG_VOWELS):
-                if pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["short_long_vowel"].get(pronoun, "")
-            elif verb.endswith(("n","am")):
-                if pronoun == "2s":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "21":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-                elif pronoun == "2p":
-                    suffix = PRONOUN_SUFFIX_MAP[form][neg]["n_am"].get(pronoun, "")
-
-    if form == "independent" and neg == False:
-        return base + styled_text(suffix, "green_normal")
-    elif form == "independent" and neg == True:
-        return base + styled_text(suffix, "red_normal")
-    
-    if form == "dependent" and neg == False:
-        return base + styled_text(suffix, "green_italic")
-    if form == "dependent" and neg == True:
-        return base + styled_text(suffix, "red_italic")
-    
-    if form == "imperative" and neg == False:
-        return base + styled_text(suffix, "green_bold")
-    if form == "imperative" and neg == True:
-        return base + styled_text(suffix, "red_bold")
+    return verb + styled_text(suffix, style)
