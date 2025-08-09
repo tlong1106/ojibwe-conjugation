@@ -21,9 +21,9 @@ class WordEndingVII(str, Enum):
     D_VOWEL = "d_vowel"
 
 class WordEndingVAI(str, Enum):
-    SHORT_LONG_VOWEL = "short_long_vowel" ### VOWEL
+    SHORT_LONG_VOWEL = "short_long_vowel"
     AM = "am"
-    N = "n" ###
+    N = "n"
     N_AM = "n_am"
 
 class Pronoun(str, Enum):
@@ -38,3 +38,10 @@ class Pronoun(str, Enum):
     FIRST_PLURAL_INC_ANIMATE = "21"
     SECOND_PLURAL_ANIMATE = "2p"
     THIRD_PLURAL_ANIMATE = "3p"
+
+class Tense(str, Enum):
+    CONDITIONAL = "conditional",
+    FUTURE_DEFINITIVE = "definitive",
+    FUTURE_DESIDERATIVE = "desiderative",
+    PAST = "past",
+    PRESENT = "present"
